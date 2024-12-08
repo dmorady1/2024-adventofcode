@@ -81,28 +81,19 @@ func calculatePart1(start Vector, obstacles map[Vector]bool, row_size int, col_s
 func calculatePart2(start Vector, part1_positions map[Vector]int, row_size int, col_size int, obstacles map[Vector]bool) int {
 	validPositions := make(map[Vector]bool)
 
-	for row := 0; row < row_size; row++ {
-		for col := 0; col < col_size; col++ {
-			pos := Vector{row: row, col: col}
+	for pos := range part1_positions {
+		if pos == start || obstacles[pos] {
+			continue
+		}
 
-			// Skip if position is:
-			// - the start position
-			// - an existing obstacle
-			if pos == start || obstacles[pos] {
-				continue
-			}
+		newObstacles := make(map[Vector]bool)
+		for k, v := range obstacles {
+			newObstacles[k] = v
+		}
+		newObstacles[pos] = true
 
-			// Create new obstacles map with additional obstacle
-			newObstacles := make(map[Vector]bool)
-			for k, v := range obstacles {
-				newObstacles[k] = v
-			}
-			newObstacles[pos] = true
-
-			// Check if this creates a loop
-			if willCreateLoop(start, 0, newObstacles, row_size, col_size) {
-				validPositions[pos] = true
-			}
+		if willCreateLoop(start, 0, newObstacles, row_size, col_size) {
+			validPositions[pos] = true
 		}
 	}
 
