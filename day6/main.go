@@ -129,7 +129,6 @@ func willCreateLoop(start Vector, startDir int, rotations []Vector, obstacles ma
 	current := State{start, startDir}
 
 	for {
-		// Check if we've been here before with same direction
 		if visited[current] {
 			return true
 		}
@@ -139,7 +138,7 @@ func willCreateLoop(start Vector, startDir int, rotations []Vector, obstacles ma
 		// Check next position
 		nextPos := add(current.pos, rotations[current.dir])
 
-		// Check if we're going out of bounds
+		// Check if going out of bounds
 		if nextPos.row < 0 || nextPos.row >= row_size ||
 			nextPos.col < 0 || nextPos.col >= col_size {
 			return false
