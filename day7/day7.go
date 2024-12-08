@@ -40,14 +40,12 @@ func main() {
 	result := calculatePart1(testValues, values)
 	fmt.Printf("part1: %d\n", result)
 
-	// result2 := calculatePart2(string(data))
-	// fmt.Printf("part2: %d\n", result2)
+	result2 := calculatePart2(testValues, values)
+	fmt.Printf("part2: %d\n", result2)
 }
 
 func search(testValue int, numbers []int) int {
 	if len(numbers) == 1 && numbers[0] == testValue {
-		fmt.Println("success")
-		fmt.Println(testValue, numbers)
 		return testValue
 	}
 	if len(numbers) == 1 && numbers[0] != testValue {
@@ -88,8 +86,58 @@ func calculatePart1(testValues []int, values [][]int) int {
 	return result
 }
 
-func calculatePart2(text string) int {
+func search2(testValue int, numbers []int) int {
+	if len(numbers) == 1 && numbers[0] == testValue {
+		return testValue
+	}
+	if len(numbers) == 1 && numbers[0] != testValue {
+		return 0
+	}
+
+	numbersAdded := numbers[0] + numbers[1]
+	numbersMul := numbers[0] * numbers[1]
+	numbersConcat, err := strconv.Atoi(strconv.Itoa(numbers[0]) + strconv.Itoa(numbers[1]))
+	if err != nil {
+		panic(err)
+	}
+
+	newNumbersAdded := append([]int{numbersAdded}, numbers[2:]...)
+	newNumbersMul := append([]int{numbersMul}, numbers[2:]...)
+	newNumbersConcat := append([]int{numbersConcat}, numbers[2:]...)
+	valueAdd := search2(testValue, newNumbersAdded)
+	if valueAdd == testValue {
+		return testValue
+	}
+
+	valueMul := search2(testValue, newNumbersMul)
+
+	if valueMul == testValue {
+		return testValue
+	}
+
+	valueConcat := search2(testValue, newNumbersConcat)
+
+	if valueConcat == testValue {
+		return testValue
+	}
+
 	return 0
+}
+
+func calculatePart2(testValues []int, values [][]int) int {
+	result := 0
+
+	for i := 0; i < len(testValues); i++ {
+		testValue := testValues[i]
+		numbers := values[i]
+
+		if search2(testValue, numbers) == testValue {
+			result += testValue
+		}
+
+	}
+
+	return result
 }
 
 func readLines(filename string) []string {
