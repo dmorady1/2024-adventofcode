@@ -79,66 +79,56 @@ func calculatePart1(start Vector, obstacles map[Vector]bool, row_size int, col_s
 }
 
 func calculatePart2(start Vector, part1_positions map[Vector]int, row_size int, col_size int, obstacles map[Vector]bool) int {
-	result := 0
-	seen := make(map[Vector]bool)
+	validPositions := make(map[Vector]bool)
 
-	var rotations = []Vector{
-		{-1, 0}, // up
-		{0, 1},  // right
-		{1, 0},  // down
-		{0, -1}, // left
-	}
+	for row := 0; row < row_size; row++ {
+		for col := 0; col < col_size; col++ {
+			pos := Vector{row: row, col: col}
 
-	for pos := range part1_positions {
-		// Try placing obstacle at the position the guard would step to
-		obstaclePos := add(pos, rotations[part1_positions[pos]])
+			// Skip if position is:
+			// - the start position
+			// - an existing obstacle
+			if pos == start || obstacles[pos] {
+				continue
+			}
 
-		// Skip if obstacle would be outside grid or at existing obstacle
-		if obstaclePos.row < 0 || obstaclePos.row >= row_size ||
-			obstaclePos.col < 0 || obstaclePos.col >= col_size ||
-			obstacles[obstaclePos] {
-			continue
-		}
+			// Create new obstacles map with additional obstacle
+			newObstacles := make(map[Vector]bool)
+			for k, v := range obstacles {
+				newObstacles[k] = v
+			}
+			newObstacles[pos] = true
 
-		// Create new obstacles map with additional obstacle
-		newObstacles := make(map[Vector]bool)
-		for k, v := range obstacles {
-			newObstacles[k] = v
-		}
-		newObstacles[obstaclePos] = true
-
-		// Check if this creates a loop
-		if willCreateLoop(start, 0, rotations, newObstacles, row_size, col_size) {
-			if !seen[obstaclePos] {
-				result++
-				seen[obstaclePos] = true
+			// Check if this creates a loop
+			if willCreateLoop(start, 0, newObstacles, row_size, col_size) {
+				validPositions[pos] = true
 			}
 		}
 	}
 
-	return result
+	return len(validPositions)
 }
 
-func willCreateLoop(start Vector, startDir int, rotations []Vector, obstacles map[Vector]bool, row_size, col_size int) bool {
+func willCreateLoop(start Vector, startDir int, obstacles map[Vector]bool, row_size, col_size int) bool {
 	type State struct {
 		pos Vector
 		dir int
 	}
 
-	visited := make(map[State]bool)
+	visited := make(map[State]struct{})
 	current := State{start, startDir}
 
-	for {
-		if visited[current] {
+	rotations := []Vector{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}
+
+	for len(visited) < row_size*col_size*4 {
+		if _, exists := visited[current]; exists {
 			return true
 		}
 
-		visited[current] = true
-
-		// Check next position
-		nextPos := add(current.pos, rotations[current.dir])
+		visited[current] = struct{}{}
 
 		// Check if going out of bounds
+		nextPos := add(current.pos, rotations[current.dir])
 		if nextPos.row < 0 || nextPos.row >= row_size ||
 			nextPos.col < 0 || nextPos.col >= col_size {
 			return false
@@ -152,7 +142,9 @@ func willCreateLoop(start Vector, startDir int, rotations []Vector, obstacles ma
 
 		// Move forward
 		current.pos = nextPos
+
 	}
+	return false
 }
 func readLines(filename string) []string {
 	file, err := os.Open(filename)
