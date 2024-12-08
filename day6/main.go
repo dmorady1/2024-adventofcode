@@ -86,15 +86,11 @@ func calculatePart2(start Vector, part1_positions map[Vector]int, row_size int, 
 			continue
 		}
 
-		newObstacles := make(map[Vector]bool)
-		for k, v := range obstacles {
-			newObstacles[k] = v
-		}
-		newObstacles[pos] = true
-
-		if willCreateLoop(start, 0, newObstacles, row_size, col_size) {
+		obstacles[pos] = true
+		if willCreateLoop(start, 0, obstacles, row_size, col_size) {
 			validPositions[pos] = true
 		}
+		delete(obstacles, pos)
 	}
 
 	return len(validPositions)
