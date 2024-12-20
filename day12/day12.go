@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
 )
 
 func parseLines(lines []string) [][]rune {
@@ -225,6 +226,8 @@ func isOutside(grid [][]rune, vector Vector) bool {
 }
 
 func main() {
+	startTime := time.Now()
+
 	lines := readLines(os.Args[1])
 	input := parseLines(lines)
 	result, groups := calculatePart1(input)
@@ -232,6 +235,9 @@ func main() {
 
 	result2 := calculatePart2(input, groups)
 	fmt.Printf("part2: %d\n", result2)
+
+	executionTime := time.Since(startTime)
+	fmt.Printf("Execution time: %v\n", executionTime)
 }
 
 func readLines(filename string) []string {
