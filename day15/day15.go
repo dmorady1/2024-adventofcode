@@ -300,7 +300,7 @@ func calculatePart2(grid [][]rune, walls map[Vector]bool, boxes map[Vector]Vecto
 	}
 
 	grid[robot.row][robot.col] = '@'
-	printGrid(grid)
+	// printGrid(grid)
 
 	for leftEdge, _ := range leftEdges {
 		// fmt.Println(leftEdge)
