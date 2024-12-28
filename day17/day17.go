@@ -210,7 +210,6 @@ func recursiveTest(registers []uint, opcodes []uint, operands []uint, expected s
 		newA := baseA | i
 		testResult := calculatePart1([]uint{newA, 0, 0}, opcodes, operands)
 
-		// Check if this combination could lead to the expected result
 		if strings.HasSuffix(expected, testResult) {
 			result := recursiveTest(registers, opcodes, operands, expected, program, newA, depth+1)
 			if result != 0 {
@@ -252,47 +251,6 @@ func main() {
 
 	result2 := calculatePart2(registers, opcodes, operands, expected, program)
 	fmt.Printf("part2: %v\n", result2)
-	//
-	// intToBinaryMap := make(map[uint][]string)
-	// var output uint
-	//
-	// indexToCandidates := make(map[int][]uint)
-	// fmt.Println("hier")
-	// for outputIndex := len(program) - 1; outputIndex >= 0; outputIndex-- {
-	// 	for try := uint(0); try < 8; try++ {
-	// 		registers[0] = try
-	// 		registers[1] = 0
-	// 		registers[2] = 0
-	//
-	// 		test := calculatePart1(registers, opcodes, operands)
-	// 		fmt.Println(test)
-	// 		// if program[outputIndex] == test {
-	// 		// 	indexToCandidates[outputIndex] = append(indexToCandidates[outputIndex], try)
-	// 		// }
-	// 		// test := calculatePart1(registers, opcodes, operands)
-	// 	}
-	// }
-	// fmt.Println(indexToCandidates)
-	// return
-	//
-	// for A := uint(0); A < 10; A++ {
-	// 	output = testfunction(A)
-	// 	fmt.Println(output)
-	// }
-	//
-	// fmt.Println(testfunction(binaryToUint("10100000000000000000000000000000")))
-	// registers[0] = binaryToUint("10000000000000000000000000000000")
-	//
-	// fmt.Println("--------------asdjfkasjdfsafjaskdfjasdjfasjdfasjdfjaskfdjaskdjfaskdjfkasdj")
-	// for i := 0; i < 10; i++ {
-	//
-	// 	fmt.Println(i)
-	// 	registers[0] = 2 << 45
-	// 	registers[1] = 0
-	// 	registers[2] = 0
-	// 	fmt.Println(calculatePart1(registers, opcodes, operands))
-	// }
-	// fmt.Println(intToBinaryMap)
 
 	executionTime := time.Since(startTime)
 	fmt.Printf("Execution time: %v\n", executionTime)
