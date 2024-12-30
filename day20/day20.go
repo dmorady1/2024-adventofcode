@@ -246,15 +246,130 @@ func printGrid(grid [][]rune) {
 	fmt.Print(result)
 }
 
-// func calculatePart2(grid [][]rune, walls []Vector, start Vector, end Vector, numBytes int) Vector {
-// 	for {
-// 		if bfs(grid, walls, start, end, numBytes) == -1 {
-// 			return walls[numBytes-1]
-// 		}
-// 		numBytes++
-// 	}
-//
-// }
+type CheatPath struct {
+	start     Vector
+	end       Vector
+	wallPath  []Vector // The actual walls broken
+	timeSaved int
+}
+
+func (c CheatPath) key() string {
+	// Create unique key including the wall path
+	var wallsStr strings.Builder
+	for _, w := range c.wallPath {
+		wallsStr.WriteString(fmt.Sprintf("_%d,%d", w.row, w.col))
+	}
+	return fmt.Sprintf("%d,%d-%d,%d%s", c.start.row, c.start.col, c.end.row, c.end.col, wallsStr.String())
+}
+
+type CheatState struct {
+	pos      Vector
+	wallPath []Vector
+	steps    int
+}
+
+func calculatePart2(grid [][]rune, walls map[Vector]bool, startPosition Vector, endPosition Vector) int {
+	directions := []Vector{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+	normalPath, normalPathLength := bfs(grid, walls, startPosition, endPosition)
+
+	// Pre-calculate distance to end
+	distanceToEnd := make(map[Vector]int, len(normalPath))
+	for i, pos := range normalPath {
+		distanceToEnd[pos] = len(normalPath) - i - 1
+	}
+
+	type CheatKey struct {
+		start, end Vector
+	}
+	cheats := make(map[CheatKey]int, 1000) // Preallocate with estimated capacity
+
+	type QueueItem struct {
+		pos   Vector
+		steps int
+		walls int
+	}
+
+	maxRow, maxCol := len(grid)-1, len(grid[0])-1
+
+	visited := make(map[string]bool, 1000)
+	queue := make([]QueueItem, 0, 1000)
+
+	var visitKeyBuffer strings.Builder
+	visitKeyBuffer.Grow(32)
+
+	for i, currentPos := range normalPath {
+		for k := range visited {
+			delete(visited, k)
+		}
+		queue = queue[:0]
+		queue = append(queue, QueueItem{currentPos, 0, 0})
+
+		for len(queue) > 0 {
+			current := queue[0]
+			queue = queue[1:]
+
+			if current.steps >= 20 {
+				continue
+			}
+
+			for _, dir := range directions {
+				next := Vector{current.pos.row + dir.row, current.pos.col + dir.col}
+
+				if next.row < 0 || next.row > maxRow || next.col < 0 || next.col > maxCol {
+					continue
+				}
+
+				newSteps := current.steps + 1
+				newWalls := current.walls
+				if walls[next] {
+					newWalls++
+					if newWalls > 20 {
+						continue
+					}
+				}
+
+				visitKeyBuffer.Reset()
+				fmt.Fprintf(&visitKeyBuffer, "%d,%d,%d", next.row, next.col, newWalls)
+				visitKey := visitKeyBuffer.String()
+
+				if !visited[visitKey] {
+					visited[visitKey] = true
+
+					if endDist, ok := distanceToEnd[next]; ok && newWalls > 0 {
+						totalDist := i + newSteps + endDist
+						if totalDist < normalPathLength {
+							timeSaved := normalPathLength - totalDist
+							cheatKey := CheatKey{currentPos, next}
+
+							if existing, exists := cheats[cheatKey]; !exists || timeSaved > existing {
+								cheats[cheatKey] = timeSaved
+							}
+						}
+					}
+
+					queue = append(queue, QueueItem{next, newSteps, newWalls})
+				}
+			}
+		}
+	}
+
+	// Optimize counting phase
+	result := 0
+	for _, timeSaved := range cheats {
+		if timeSaved >= 100 {
+			result++
+		}
+	}
+
+	return result
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
 
 func main() {
 	startTime := time.Now()
@@ -265,10 +380,8 @@ func main() {
 	result := calculatePart1(grid, walls, startPosition, endPosition)
 	fmt.Printf("Part 1: %d\n", result)
 
-	// result := calculatePart1(grid, walls, startPosition, endPosition)
-	// fmt.Printf("Part 1: %d\n", result)
-	// result2 := calculatePart2(grid, walls, startPosition, endPosition, 1024)
-	// fmt.Printf("Part 2: %d,%d\n", result2.col, result2.row)
+	result2 := calculatePart2(grid, walls, startPosition, endPosition)
+	fmt.Printf("Part 2: %d\n", result2)
 
 	executionTime := time.Since(startTime)
 	fmt.Printf("Execution time: %v\n", executionTime)
